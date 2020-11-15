@@ -1,5 +1,12 @@
 #include <FastLED.h>
 
+// bugs/new features
+// when starting each new function, the starting position might not be correct
+// chaser stops randomly, not at the end of a full run, and starts randomly
+// tracer starts randomly
+// would like to use an array of functions in the loop if for easier configuration - http://www.cplusplus.com/forum/beginner/27582/
+
+
 #define NUM_LEDS 147
 #define DATA_PIN 8
 CRGB leds[NUM_LEDS];
@@ -23,21 +30,22 @@ void setup() {
 }
 
 void loop() {
-//  tracer();
-  if (functionRunCounter == 10) {
+  if (functionRunCounter == 12) {
     functionRunCounter = 0;
     fill_solid(leds, NUM_LEDS, blackColor);
     FastLED.show();
     delay(1000);
-    Serial.print("---------Reset--------");
+    Serial.print("---------Reset--------\n");
   } else if (functionRunCounter < 2) {
-    fadeOffThenOn();
-  } else if (functionRunCounter > 1 && functionRunCounter < 4) {
     twoSidedOnThenOff();
+  } else if (functionRunCounter > 1 && functionRunCounter < 4) {
+    tracer();
   } else if (functionRunCounter > 3 && functionRunCounter < 7) {
     chaserUsingSawToothWave();
+  } else if (functionRunCounter > 6 && functionRunCounter < 9) {
+    fadeOffThenOn();
   } else {
-    tracer();
+    chaser();
   }
 
   EVERY_N_MILLISECONDS(1000) {
@@ -46,20 +54,37 @@ void loop() {
 }
 
 void chaser() {
-//  CRGB color = CRGB::Purple;
-  CHSV color = CHSV(192, 128, 200);
-  for(int dot = 0;dot < NUM_LEDS; dot++) {
-    leds[dot] = color;
-    FastLED.show();
-    leds[dot] = CRGB::Black;
-    delay(25);
+  // this function will light up all leds one at a time from the start to the end
+  // then on the way back it will turn each led off one at a time to the start
+  // A sinBeat is the number of the led in the leds array too light up from 0 to number of leds
+  // I needed to add 2 sinBeat's because once I started using over 85 leds it was
+  // skipping a few numbers I think because it was going through the numbers too fast
+  uint8_t waveSpeedBPM = 10;
+  uint8_t sinBeat1 = beatsin8(waveSpeedBPM, 0, NUM_LEDS -1, 0, 0);
+  uint8_t sinBeat2 = sinBeat1 - 1;
+  CRGB color;
+  if (upDown == 0){
+    color = redColor;
+  } else {
+    color = CRGB::Black;
   }
+  if (sinBeat1 == 0) {
+    upDown = 0;
+  }
+  if (sinBeat1 == NUM_LEDS -1) {
+    upDown = 1;
+  }
+  
+  leds[sinBeat1] = color;
+  leds[sinBeat2] = color;
+  FastLED.show();
 
-  for(int dot = NUM_LEDS-1;dot > 0; dot--) {
-    leds[dot] = color;
-    FastLED.show();
-    leds[dot] = CRGB::Black;
-    delay(25);
+  int timeForOneFullWave = (60/waveSpeedBPM)*1000;
+  EVERY_N_MILLISECONDS(timeForOneFullWave*3) {
+    functionRunCounter++;
+    Serial.print("adding in chaser");
+    Serial.print("\n");
+    fill_solid(leds, NUM_LEDS, CRGB::black); //set all leds to black once we get to the end
   }
 }
 
@@ -67,10 +92,12 @@ void tracer() {
   // this one uses a wave where it goes from the start to the end of the strip
   // then back the opposite direction but has a nice tail and fade out effect
   uint8_t waveSpeedBPM = 20;
-  uint8_t sinBeat = beatsin8(waveSpeedBPM, 0, NUM_LEDS -1, 0, 0);
-  leds[sinBeat] = redColor;
+  uint8_t sinBeat1 = beatsin8(waveSpeedBPM, 0, NUM_LEDS -1, 0, 0);
+  uint8_t sinBeat2 = sinBeat1 - 1;
+  leds[sinBeat1] = redColor;
+  leds[sinBeat2] = redColor;
   
-  fadeToBlackBy(leds, NUM_LEDS, 10);
+  fadeToBlackBy(leds, NUM_LEDS, 20);
   FastLED.show();
 
   int timeForOneFullWave = (60/waveSpeedBPM)*1000;
@@ -78,6 +105,7 @@ void tracer() {
     functionRunCounter++;
     Serial.print("adding in tracer");
     Serial.print("\n");
+    fill_solid(leds, NUM_LEDS, CRGB::black); //set all leds to black once we get to the end
   }
 }
 
@@ -108,7 +136,6 @@ void chaserUsingSawToothWave() {
   }
 }
 
-
 void twoSidedOnThenOff() {
   CHSV color;
 
@@ -136,6 +163,7 @@ void twoSidedOnThenOff() {
       functionRunCounter++;   //increment functionRunCounter everytime we make it through one full cycle
       Serial.print("adding in twoSidedOnThenOff");
       Serial.print("\n");
+      fill_solid(leds, NUM_LEDS, CRGB::black); //set all leds to black once we get to the end
     }
     FastLED.show();
   }
@@ -160,6 +188,7 @@ void fadeOffThenOn() {
       functionRunCounter++;   //increment functionRunCounter everytime we make it through one full cycle
       Serial.print("adding in fadeOffThenOn");
       Serial.print("\n");
+      fill_solid(leds, NUM_LEDS, CRGB::black); //set all leds to black once we get to the end
     }
   }
 
