@@ -21,8 +21,9 @@ uint8_t ledsLit = 0;
 CHSV redColor = CHSV(0, 255, 255); // bright red
 CHSV blackColor = CHSV(0, 0, 0);
 
+typedef void (*fn)();
+
 void setup() {
-  // put your setup code here, to run once:
   FastLED.addLeds<WS2812B, DATA_PIN, GRB>(leds, NUM_LEDS);
   FastLED.setBrightness(50);
 
@@ -30,6 +31,14 @@ void setup() {
 }
 
 void loop() {
+  static fn animationFunctions[] = {
+    twoSidedOnThenOff,
+    tracer,
+    chaserUsingSawToothWave,
+    fadeOffThenOn,
+    chaser
+  };
+  
   if (functionRunCounter == 13) {
     functionRunCounter = 0;
     fill_solid(leds, NUM_LEDS, blackColor);
@@ -37,15 +46,15 @@ void loop() {
     delay(1000);
     Serial.print("---------Reset--------\n");
   } else if (functionRunCounter < 2) {
-    twoSidedOnThenOff();
+    animationFunctions[0]();
   } else if (functionRunCounter > 1 && functionRunCounter < 5) {
-    tracer(); //need to do this one an extra time since the second time we run this, it skips the first count
+    animationFunctions[1](); //need to do this one an extra time since the second time we run this, it skips the first count
   } else if (functionRunCounter > 4 && functionRunCounter < 8) {
-    chaserUsingSawToothWave(); //need to do this one an extra time since the second time we run this, it skips the first count
+    animationFunctions[2](); //need to do this one an extra time since the second time we run this, it skips the first count
   } else if (functionRunCounter > 7 && functionRunCounter < 10) {
-    fadeOffThenOn();
+    animationFunctions[3]();
   } else {
-    chaser(); //need to do this one an extra time since the second time we run this, it skips the first count
+    animationFunctions[4](); //need to do this one an extra time since the second time we run this, it skips the first count
   }
 
   EVERY_N_MILLISECONDS(1000) {
