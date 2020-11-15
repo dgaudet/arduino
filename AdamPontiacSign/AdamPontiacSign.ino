@@ -30,7 +30,7 @@ void setup() {
 }
 
 void loop() {
-  if (functionRunCounter == 12) {
+  if (functionRunCounter == 13) {
     functionRunCounter = 0;
     fill_solid(leds, NUM_LEDS, blackColor);
     FastLED.show();
@@ -38,14 +38,14 @@ void loop() {
     Serial.print("---------Reset--------\n");
   } else if (functionRunCounter < 2) {
     twoSidedOnThenOff();
-  } else if (functionRunCounter > 1 && functionRunCounter < 4) {
-    tracer();
-  } else if (functionRunCounter > 3 && functionRunCounter < 7) {
-    chaserUsingSawToothWave();
-  } else if (functionRunCounter > 6 && functionRunCounter < 9) {
+  } else if (functionRunCounter > 1 && functionRunCounter < 5) {
+    tracer(); //need to do this one an extra time since the second time we run this, it skips the first count
+  } else if (functionRunCounter > 4 && functionRunCounter < 8) {
+    chaserUsingSawToothWave(); //need to do this one an extra time since the second time we run this, it skips the first count
+  } else if (functionRunCounter > 7 && functionRunCounter < 10) {
     fadeOffThenOn();
   } else {
-    chaser();
+    chaser(); //need to do this one an extra time since the second time we run this, it skips the first count
   }
 
   EVERY_N_MILLISECONDS(1000) {
@@ -80,11 +80,10 @@ void chaser() {
   FastLED.show();
 
   int timeForOneFullWave = (60/waveSpeedBPM)*1000;
-  EVERY_N_MILLISECONDS(timeForOneFullWave*3) {
+  EVERY_N_MILLISECONDS(timeForOneFullWave*2) {
     functionRunCounter++;
     Serial.print("adding in chaser");
     Serial.print("\n");
-    fill_solid(leds, NUM_LEDS, CRGB::black); //set all leds to black once we get to the end
   }
 }
 
@@ -101,11 +100,11 @@ void tracer() {
   FastLED.show();
 
   int timeForOneFullWave = (60/waveSpeedBPM)*1000;
-  EVERY_N_MILLISECONDS(timeForOneFullWave*3) {
+  EVERY_N_MILLISECONDS(timeForOneFullWave*2) {
     functionRunCounter++;
     Serial.print("adding in tracer");
     Serial.print("\n");
-    fill_solid(leds, NUM_LEDS, CRGB::black); //set all leds to black once we get to the end
+    fill_solid(leds, NUM_LEDS, CRGB::Black); //set all leds to black once we get to the end
   }
 }
 
@@ -163,7 +162,7 @@ void twoSidedOnThenOff() {
       functionRunCounter++;   //increment functionRunCounter everytime we make it through one full cycle
       Serial.print("adding in twoSidedOnThenOff");
       Serial.print("\n");
-      fill_solid(leds, NUM_LEDS, CRGB::black); //set all leds to black once we get to the end
+      fill_solid(leds, NUM_LEDS, CRGB::Black); //set all leds to black once we get to the end
     }
     FastLED.show();
   }
@@ -188,7 +187,7 @@ void fadeOffThenOn() {
       functionRunCounter++;   //increment functionRunCounter everytime we make it through one full cycle
       Serial.print("adding in fadeOffThenOn");
       Serial.print("\n");
-      fill_solid(leds, NUM_LEDS, CRGB::black); //set all leds to black once we get to the end
+      fill_solid(leds, NUM_LEDS, CRGB::Black); //set all leds to black once we get to the end
     }
   }
 
