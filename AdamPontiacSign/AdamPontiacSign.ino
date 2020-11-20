@@ -22,23 +22,21 @@ CHSV redColor = CHSV(0, 255, 255); // bright red
 CHSV blackColor = CHSV(0, 0, 0);
 
 typedef void (*fn)();
+static fn animationFunctions[5];
 
 void setup() {
   FastLED.addLeds<WS2812B, DATA_PIN, GRB>(leds, NUM_LEDS);
-  FastLED.setBrightness(50);
 
   Serial.begin(9600);
+
+  animationFunctions[0] = twoSidedOnThenOff;
+  animationFunctions[1] = tracer;
+  animationFunctions[2] = chaserUsingSawToothWave;
+  animationFunctions[3] = fadeOffThenOn;
+  animationFunctions[4] = chaser;
 }
 
 void loop() {
-  static fn animationFunctions[] = {
-    twoSidedOnThenOff,
-    tracer,
-    chaserUsingSawToothWave,
-    fadeOffThenOn,
-    chaser
-  };
-  
   if (functionRunCounter == 13) {
     functionRunCounter = 0;
     fill_solid(leds, NUM_LEDS, blackColor);
