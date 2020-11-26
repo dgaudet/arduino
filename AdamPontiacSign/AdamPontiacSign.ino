@@ -4,11 +4,10 @@
 // when starting each new function, the starting position might not be correct
 // chaser stops randomly, not at the end of a full run, and starts randomly
 // tracer starts randomly
-// would like to use an array of functions in the loop if for easier configuration - http://www.cplusplus.com/forum/beginner/27582/
 
 
 #define NUM_LEDS 147
-#define DATA_PIN 8
+#define DATA_PIN 2
 CRGB leds[NUM_LEDS];
 
 uint8_t value = 0;
@@ -24,10 +23,11 @@ CHSV blackColor = CHSV(0, 0, 0);
 typedef void (*fn)();
 static fn animationFunctions[5];
 
+uint8_t chaserBeat = 0;
 void setup() {
   FastLED.addLeds<WS2812B, DATA_PIN, GRB>(leds, NUM_LEDS);
-
   Serial.begin(9600);
+  FastLED.setBrightness(5);
 
   animationFunctions[0] = twoSidedOnThenOff;
   animationFunctions[1] = tracer;
@@ -51,6 +51,7 @@ void loop() {
     animationFunctions[2](); //need to do this one an extra time since the second time we run this, it skips the first count
   } else if (functionRunCounter > 7 && functionRunCounter < 10) {
     animationFunctions[3]();
+    chaserBeat = 0;
   } else {
     animationFunctions[4](); //need to do this one an extra time since the second time we run this, it skips the first count
   }
@@ -67,27 +68,27 @@ void chaser() {
   // I needed to add 2 sinBeat's because once I started using over 85 leds it was
   // skipping a few numbers I think because it was going through the numbers too fast
   uint8_t waveSpeedBPM = 10;
-  uint8_t sinBeat1 = beatsin8(waveSpeedBPM, 0, NUM_LEDS -1, 0, 0);
-  uint8_t sinBeat2 = sinBeat1 - 1;
+  chaserBeat = beatsin8(waveSpeedBPM, 0, NUM_LEDS -1, 0, 0);
+  uint8_t sinBeat2 = chaserBeat - 1;
   CRGB color;
   if (upDown == 0){
     color = redColor;
   } else {
     color = CRGB::Black;
   }
-  if (sinBeat1 == 0) {
+  if (chaserBeat == 0) {
     upDown = 0;
   }
-  if (sinBeat1 == NUM_LEDS -1) {
+  if (chaserBeat == NUM_LEDS -1) {
     upDown = 1;
   }
   
-  leds[sinBeat1] = color;
+  leds[chaserBeat] = color;
   leds[sinBeat2] = color;
   FastLED.show();
 
   int timeForOneFullWave = (60/waveSpeedBPM)*1000;
-  EVERY_N_MILLISECONDS(timeForOneFullWave*2) {
+  EVERY_N_MILLISECONDS(timeForOneFullWave*1.75) {
     functionRunCounter++;
     Serial.print("adding in chaser");
     Serial.print("\n");
