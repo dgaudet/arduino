@@ -17,11 +17,9 @@ class ChaserUsingSawTooth {
     void (*finishedPatternCB)();
     
     uint8_t numRuns;
-    bool upDown = false;
-    uint8_t waveSpeedBPM = 10;
+    uint8_t waveSpeedBPM = 15;
     int numLeds;
     uint8_t runCounter = 0;
-    uint8_t chaserBeat = 0;
 };
 
 void ChaserUsingSawTooth::runPattern(CRGB ledStrip[], CHSV color) {
@@ -33,7 +31,6 @@ void ChaserUsingSawTooth::runPattern(CRGB ledStrip[], CHSV color) {
   // so if you have 10 bpm you get 6000ms which means it takes 6sec for the wave to reach the end
   // of the strip
   
-  uint8_t waveSpeedBPM = 15;
   uint8_t fadeToBlackSpeed = 45;
   for (uint8_t chaserCount = 0; chaserCount < 12; chaserCount++) {
     uint8_t pos = map(beat8(waveSpeedBPM, chaserCount*330), 0, 255, 0, numLeds -1);

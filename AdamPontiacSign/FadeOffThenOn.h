@@ -1,5 +1,9 @@
 #include "Arduino.h"
 
+//bugs:
+// can I use fadeToBlackBy here instead of the brightness down?
+// the brightness down gets fidgety at the end
+
 class FadeOffThenOn {
   public:
     FadeOffThenOn(
@@ -17,10 +21,8 @@ class FadeOffThenOn {
     
     uint8_t numRuns;
     bool upDown = true;
-    uint8_t waveSpeedBPM = 10;
     int numLeds;
     uint8_t runCounter = 0;
-    uint8_t chaserBeat = 0;
     uint8_t brightness = 0;
 };
 
