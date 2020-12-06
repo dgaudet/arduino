@@ -47,7 +47,6 @@ void Chaser::runPattern(CRGB ledStrip[]) {
   EVERY_N_MILLISECONDS(timeForOneFullWave*1.75) {
     runCounter++;
     Serial.print("adding in chaser");
-    Serial.print(runCounter);Serial.print(" : ");Serial.print(numRuns);
     Serial.print("\n");
     if (runCounter == numRuns) {
       finishedPattern();
