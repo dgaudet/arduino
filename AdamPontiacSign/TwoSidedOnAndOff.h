@@ -2,37 +2,45 @@
 
 class TwoSidedOnAndOff {
   public:
-    TwoSidedOnAndOff(int numLedsInput, uint8_t numRunsInput) {
+    TwoSidedOnAndOff(
+      int numLedsInput,
+      uint8_t numRunsInput,
+      void (*finishedCallBack)())
+    {
       numLeds = numLedsInput;
       numRuns = numRunsInput;
+      finishedPatternCB = finishedCallBack;
     };
 
-    void runPattern(CRGB ledStrip[]);
+    void runPattern(CRGB ledStrip[], CHSV color);
   private:
+    void (*finishedPatternCB)();
+    
     uint8_t numRuns;
     uint8_t waveSpeedBPM = 20;
     int numLeds;
     uint8_t runCounter = 0;
     bool upDown = true;
     uint8_t brightness = 0;
+    CHSV blackColor = CHSV(0, 0, 0);
 };
 
-void TwoSidedOnAndOff::runPattern(CRGB ledStrip[]) {
-  CHSV color;
-
+void TwoSidedOnAndOff::runPattern(CRGB ledStrip[], CHSV color) {
+  CHSV currentColor = color;
   EVERY_N_MILLISECONDS(50) {
     if (brightness == 0) {
       fill_solid(ledStrip, numLeds, blackColor);
+      FastLED.show();
     }
     if (upDown){
-      color = redColor;
-      ledStrip[brightness] = color;
-      ledStrip[numLeds - brightness -1] = color;
+      currentColor = color;
+      ledStrip[brightness] = currentColor;
+      ledStrip[numLeds - brightness -1] = currentColor;
       brightness++;
     } else {
-      color = blackColor;
-      ledStrip[brightness] = color;
-      ledStrip[numLeds - brightness -1] = color;
+      currentColor = blackColor;
+      ledStrip[brightness] = currentColor;
+      ledStrip[numLeds - brightness -1] = currentColor;
       brightness--;
     }
     if (brightness > numLeds/2){
@@ -44,7 +52,7 @@ void TwoSidedOnAndOff::runPattern(CRGB ledStrip[]) {
       Serial.print("adding in twoSidedOnThenOff");
       Serial.print("\n");
       if (runCounter == numRuns) {
-        finishedPattern();
+        finishedPatternCB();
       }
     }
     FastLED.show();
