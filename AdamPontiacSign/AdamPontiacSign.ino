@@ -10,13 +10,8 @@
 #define DATA_PIN 2
 CRGB leds[NUM_LEDS];
 
-uint8_t value = 0;
-uint8_t upDown = 0;
 bool isRunning = false;
-
 uint8_t functionRunCounter = 0;
-
-uint8_t ledsLit = 0;
 
 CHSV redColor = CHSV(0, 255, 255); // bright red
 CHSV blackColor = CHSV(0, 0, 0);
@@ -34,32 +29,32 @@ void finishedPattern() {
 #include "Tracer.h"
 #include "TwoSidedOnAndOff.h"
 #include "ChaserUsingSawTooth.h"
+#include "FadeOffThenOn.h"
 
 uint8_t chaserBeat = 0;
 void setup() {
   FastLED.addLeds<WS2812B, DATA_PIN, GRB>(leds, NUM_LEDS);
   Serial.begin(9600);
   FastLED.setBrightness(20);
-
-  animationFunctions[0] = twoSidedOnThenOff;
-  animationFunctions[1] = fadeOffThenOn;
 }
 
 void loop() {
-  if (functionRunCounter == 4) {
-    functionRunCounter = 0;
-    fill_solid(leds, NUM_LEDS, blackColor);
-    FastLED.show();
-    delay(1000);
-    Serial.print("---------Reset--------\n");
-  } else if (functionRunCounter == 0) {
-    runTwoSidedOnAndOff(2);
-  } else if (functionRunCounter == 1) {
-    runTracer(3); //need to do this one an extra time since the second time we run this, it skips the first count
-  } else if (functionRunCounter == 2) {
-    runChaserUsingSawTooth(2); //need to do this one an extra time since the second time we run this, it skips the first count
-  } else {
-    runChaser(3); 
+  switch (functionRunCounter) {
+    case 0:
+      runTwoSidedOnAndOff(2);
+      break;
+    case 1:
+      runTracer(2);
+      break;
+    case 2:
+      runFadeOffThenOn(2);
+      break;
+    case 3:
+      runChaserUsingSawTooth(2);
+      break;
+    default:
+      runChaser(2);
+      break;
   }
 
   EVERY_N_MILLISECONDS(1000) {
@@ -69,7 +64,12 @@ void loop() {
 
 void nextPattern() {
   isRunning = false;
-  functionRunCounter = functionRunCounter+1;
+  uint8_t numAnimations = 5;
+  functionRunCounter = (functionRunCounter+1);
+  if(functionRunCounter >= numAnimations) {
+    functionRunCounter = 0;
+    Serial.print("---------Reset--------\n");
+  }
 }
 
 void runTwoSidedOnAndOff(uint8_t numRuns) {
@@ -104,61 +104,10 @@ void runChaserUsingSawTooth(uint8_t numRuns) {
   while(isRunning) chaser.runPattern(leds);
 }
 
-void twoSidedOnThenOff() {
-  CHSV color;
-
-  EVERY_N_MILLISECONDS(50) {
-    if (value == 0) {
-      fill_solid(leds, NUM_LEDS, blackColor);
-      FastLED.show();
-    }
-    if (upDown == 0){
-      color = redColor;
-      leds[value] = color;
-      leds[NUM_LEDS - value -1] = color;
-      value++;
-    } else {
-      color = blackColor;
-      leds[value] = color;
-      leds[NUM_LEDS - value -1] = color;
-      value--;
-    }
-    if (value > NUM_LEDS/2){
-      upDown = 1;
-    }
-    if (value < 1) {
-      upDown = 0;
-      functionRunCounter++;   //increment functionRunCounter everytime we make it through one full cycle
-      Serial.print("adding in twoSidedOnThenOff");
-      Serial.print("\n");
-      fill_solid(leds, NUM_LEDS, CRGB::Black); //set all leds to black once we get to the end
-    }
-    FastLED.show();
-  }
-}
-
-void fadeOffThenOn() {
-  CHSV color = CHSV(0, 255, value);
-
-  fill_solid(leds, NUM_LEDS, color);
-  
-  EVERY_N_MILLISECONDS(15) {
-    if (upDown == 0){
-      value++;
-    } else {
-      value--;
-    }
-    if (value > 200){
-      upDown = 1;
-    }
-    if (value < 1) {
-      upDown = 0;
-      functionRunCounter++;   //increment functionRunCounter everytime we make it through one full cycle
-      Serial.print("adding in fadeOffThenOn");
-      Serial.print("\n");
-      fill_solid(leds, NUM_LEDS, CRGB::Black); //set all leds to black once we get to the end
-    }
-  }
-
-  FastLED.show();
+void runFadeOffThenOn(uint8_t numRuns) {
+  Serial.print("run FadeOffThenOn");
+  Serial.print("\n");
+  isRunning = true;
+  FadeOffThenOn fader = FadeOffThenOn(NUM_LEDS, numRuns);
+  while(isRunning) fader.runPattern(leds);
 }
