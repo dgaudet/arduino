@@ -12,6 +12,7 @@ CRGB leds[NUM_LEDS];
 
 uint8_t value = 0;
 uint8_t upDown = 0;
+bool isRunning = false;
 
 uint8_t functionRunCounter = 0;
 
@@ -23,11 +24,17 @@ CHSV blackColor = CHSV(0, 0, 0);
 typedef void (*fn)();
 static fn animationFunctions[5];
 
+void finishedPattern() {
+  nextPattern();
+}
+
+#include "Tracer.h"
+
 uint8_t chaserBeat = 0;
 void setup() {
   FastLED.addLeds<WS2812B, DATA_PIN, GRB>(leds, NUM_LEDS);
   Serial.begin(9600);
-  FastLED.setBrightness(5);
+  FastLED.setBrightness(20);
 
   animationFunctions[0] = twoSidedOnThenOff;
   animationFunctions[1] = tracer;
@@ -46,10 +53,10 @@ void loop() {
   } else if (functionRunCounter < 2) {
     animationFunctions[0]();
   } else if (functionRunCounter > 1 && functionRunCounter < 5) {
-    animationFunctions[1](); //need to do this one an extra time since the second time we run this, it skips the first count
-  } else if (functionRunCounter > 4 && functionRunCounter < 8) {
+    runTracer(3); //need to do this one an extra time since the second time we run this, it skips the first count
+  } else if (functionRunCounter > 4 && functionRunCounter < 6) {
     animationFunctions[2](); //need to do this one an extra time since the second time we run this, it skips the first count
-  } else if (functionRunCounter > 7 && functionRunCounter < 10) {
+  } else if (functionRunCounter > 5 && functionRunCounter < 10) {
     animationFunctions[3]();
     chaserBeat = 0;
   } else {
@@ -59,6 +66,19 @@ void loop() {
   EVERY_N_MILLISECONDS(1000) {
     Serial.print(functionRunCounter);
   }
+}
+
+void nextPattern() {
+  isRunning = false;
+  functionRunCounter = functionRunCounter+1;
+}
+
+void runTracer(uint8_t numRuns) {
+  Serial.print("run tracer dot");
+  Serial.print("\n");
+  isRunning = true;
+  Tracer tracer = Tracer(NUM_LEDS, numRuns);
+  while(isRunning) tracer.runPattern(leds);
 }
 
 void chaser() {
