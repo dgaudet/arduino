@@ -18,8 +18,18 @@
 // all lights on at 225 brightness - 0.667a
 // all lights on at 255 brightness - 0.750a
 
-CRGB bodyLeds[BODY_NUM_LEDS];
-CRGB extraLeds[EXTRA_NUM_LEDS];
+CRGB bodyLeds1[BODY_NUM_LEDS];
+CRGB bodyLeds2[BODY_NUM_LEDS];
+CRGB bodyLedsOut[BODY_NUM_LEDS];
+uint8_t blendAmount = 0;
+uint8_t patternCounter = 0;
+uint8_t pattern1 = 0;
+uint8_t pattern2 = 0;
+bool useSource1 = false;
+
+CRGB extraLeds1[EXTRA_NUM_LEDS];
+CRGB extraLeds2[EXTRA_NUM_LEDS];
+CRGB extraLedsOut[EXTRA_NUM_LEDS];
 
 CHSV hsvToCHSV(int hNum, uint8_t sNum, uint8_t vNum) {
   uint8_t hValue = map(hNum, 0, 360, 0, 255);
@@ -49,8 +59,8 @@ CHSV blackColor = CHSV(0, 0, 0);
 
 void setup() {
   // put your setup code here, to run once:
-  FastLED.addLeds<WS2812B, BODY_DATA_PIN, GRB>(bodyLeds, BODY_NUM_LEDS);
-  FastLED.addLeds<WS2812B, EXTRA_DATA_PIN, GRB>(extraLeds, EXTRA_NUM_LEDS);
+  FastLED.addLeds<WS2812B, BODY_DATA_PIN, GRB>(bodyLedsOut, BODY_NUM_LEDS);
+  FastLED.addLeds<WS2812B, EXTRA_DATA_PIN, GRB>(extraLedsOut, EXTRA_NUM_LEDS);
   FastLED.setBrightness(10);
   Serial.begin(9600);
 }
@@ -59,48 +69,107 @@ void loop() {
   // put your main code here, to run repeatedly:
 //  fill_solid(bodyLeds, BODY_NUM_LEDS, CRGB::Blue);
 //  page1();
-  page2();
+//  page2();
 //  page3();
+  EVERY_N_MILLISECONDS(10) {
+    blend(bodyLeds1, bodyLeds2, bodyLedsOut, BODY_NUM_LEDS, blendAmount);
+    blend(extraLeds1, extraLeds2, extraLedsOut, EXTRA_NUM_LEDS, blendAmount);
+    if(useSource1) {
+      if(blendAmount < 255) blendAmount++;
+    } else {
+      if(blendAmount > 0) blendAmount--;
+    }
+  }
+
+  EVERY_N_SECONDS(10) {
+    nextPattern();
+  }
+
+  runPattern(pattern1, bodyLeds1, extraLeds1);
+  runPattern(pattern2, bodyLeds2, extraLeds2);
+
   FastLED.show();
 }
 
-void page1() {
-  //color body
-  left(bodyLeds, pinkColor);
-  top(bodyLeds, pinkColor);
-  right(bodyLeds, pinkColor);
-  pants(bodyLeds, pinkColor);
-  
-  //color extremeties
-  leftBox(extraLeds, lightBlueColor);
-  horn(extraLeds, lightBlueColor);
-  eye(extraLeds, lightBlueColor);
+void nextPattern() {
+  patternCounter = (patternCounter +1) % 4;
+  if(patternCounter == 255){
+    patternCounter = 0;
+  }
+
+  if(useSource1) pattern1 = patternCounter;
+  else pattern2 = patternCounter;
+
+  useSource1 = !useSource1;
 }
 
-void page2() {
-  //color body
-  left(bodyLeds, greenColor);
-  top(bodyLeds, greenColor);
-  right(bodyLeds, greenColor);
-  pants(bodyLeds, greenColor);
-  
-  //color extremeties
-  leftBox(extraLeds, red2Color);
-  horn(extraLeds, pink2Color);
-  eye(extraLeds, blueColor);
+void runPattern(uint8_t pattern, CRGB bodyLedStrip[], CRGB extraLedStrip[]) {
+  switch (pattern) {
+    case 0:
+      page2(bodyLedStrip, extraLedStrip);
+      break;
+    case 1:
+      page1(bodyLedStrip, extraLedStrip);
+      break;
+    case 2:
+      page4(bodyLedStrip, extraLedStrip);
+      break;
+    case 3:
+      page3(bodyLedStrip, extraLedStrip);
+      break;
+  }
 }
 
-void page3() {
+void page1(CRGB bodyLedStrip[], CRGB extraLedStrip[]) {
   //color body
-  left(bodyLeds, pink4Color);
-  top(bodyLeds, pink4Color);
-  right(bodyLeds, pink4Color);
-  pants(bodyLeds, pink4Color);
+  left(bodyLedStrip, pinkColor);
+  top(bodyLedStrip, pinkColor);
+  right(bodyLedStrip, pinkColor);
+  pants(bodyLedStrip, pinkColor);
   
   //color extremeties
-  leftBox(extraLeds, lightBlue4Color);
-  horn(extraLeds, pink3Color);
-  eye(extraLeds, lightBlue3Color);
+  leftBox(extraLedStrip, lightBlueColor);
+  horn(extraLedStrip, lightBlueColor);
+  eye(extraLedStrip, lightBlueColor);
+}
+
+void page2(CRGB bodyLedStrip[], CRGB extraLedStrip[]) {
+  //color body
+  left(bodyLedStrip, greenColor);
+  top(bodyLedStrip, greenColor);
+  right(bodyLedStrip, greenColor);
+  pants(bodyLedStrip, greenColor);
+  
+  //color extremeties
+  leftBox(extraLedStrip, red2Color);
+  horn(extraLedStrip, pink2Color);
+  eye(extraLedStrip, blueColor);
+}
+
+void page3(CRGB bodyLedStrip[], CRGB extraLedStrip[]) {
+  //color body
+  left(bodyLedStrip, pink4Color);
+  top(bodyLedStrip, pink4Color);
+  right(bodyLedStrip, pink4Color);
+  pants(bodyLedStrip, pink4Color);
+  
+  //color extremeties
+  leftBox(extraLedStrip, lightBlue4Color);
+  horn(extraLedStrip, pink3Color);
+  eye(extraLedStrip, lightBlue3Color);
+}
+
+void page4(CRGB bodyLedStrip[], CRGB extraLedStrip[]) {
+  //color body
+  left(bodyLedStrip, redColor);
+  top(bodyLedStrip, redColor);
+  right(bodyLedStrip, redColor);
+  pants(bodyLedStrip, redColor);
+  
+  //color extremeties
+  leftBox(extraLedStrip, blueColor);
+  horn(extraLedStrip, pinkColor);
+  eye(extraLedStrip, greenColor);
 }
 
 void left(CRGB ledStrip[], CHSV color) {
