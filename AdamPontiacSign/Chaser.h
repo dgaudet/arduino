@@ -2,13 +2,19 @@
 
 class Chaser {
   public:
-    Chaser(int numLedsInput, uint8_t numRunsInput) {
+    Chaser(
+      int numLedsInput,
+      uint8_t numRunsInput,
+      void (*finishedCallBack)()) 
+    {
       numLeds = numLedsInput;
       numRuns = numRunsInput;
     };
 
-    void runPattern(CRGB ledStrip[]);
+    void runPattern(CRGB ledStrip[], CHSV color);
   private:
+    void (*finishedPatternCB)();
+    
     uint8_t numRuns;
     bool upDown = false;
     uint8_t waveSpeedBPM = 10;
@@ -17,25 +23,25 @@ class Chaser {
     uint8_t chaserBeat = 0;
 };
 
-void Chaser::runPattern(CRGB ledStrip[]) {
+void Chaser::runPattern(CRGB ledStrip[], CHSV ledColor) {
   // this function will light up all leds one at a time from the start to the end
   // then on the way back it will turn each led off one at a time to the start
   // A sinBeat is the number of the led in the leds array too light up from 0 to number of leds
   // I needed to add 2 sinBeat's because once I started using over 85 leds it was
   // skipping a few numbers I think because it was going through the numbers too fast
   uint8_t waveSpeedBPM = 10;
-  chaserBeat = beatsin8(waveSpeedBPM, 0, NUM_LEDS -1, 0, 0);
+  chaserBeat = beatsin8(waveSpeedBPM, 0, numLeds -1, 0, 0);
   uint8_t sinBeat2 = chaserBeat - 1;
   CRGB color;
   if (upDown){
-    color = redColor;
+    color = ledColor;
   } else {
     color = CRGB::Black;
   }
   if (chaserBeat == 0) {
     upDown = false;
   }
-  if (chaserBeat == NUM_LEDS -1) {
+  if (chaserBeat == numLeds -1) {
     upDown = true;
   }
   
@@ -49,7 +55,7 @@ void Chaser::runPattern(CRGB ledStrip[]) {
     Serial.print("adding in chaser");
     Serial.print("\n");
     if (runCounter == numRuns) {
-      finishedPattern();
+      finishedPatternCB();
     }
   }
 }
