@@ -33,6 +33,7 @@ void finishedPattern() {
 #include "Chaser.h"
 #include "Tracer.h"
 #include "TwoSidedOnAndOff.h"
+#include "ChaserUsingSawTooth.h"
 
 uint8_t chaserBeat = 0;
 void setup() {
@@ -41,12 +42,11 @@ void setup() {
   FastLED.setBrightness(20);
 
   animationFunctions[0] = twoSidedOnThenOff;
-  animationFunctions[1] = chaserUsingSawToothWave;
-  animationFunctions[2] = fadeOffThenOn;
+  animationFunctions[1] = fadeOffThenOn;
 }
 
 void loop() {
-  if (functionRunCounter == 5) {
+  if (functionRunCounter == 4) {
     functionRunCounter = 0;
     fill_solid(leds, NUM_LEDS, blackColor);
     FastLED.show();
@@ -56,8 +56,8 @@ void loop() {
     runTwoSidedOnAndOff(2);
   } else if (functionRunCounter == 1) {
     runTracer(3); //need to do this one an extra time since the second time we run this, it skips the first count
-  } else if (functionRunCounter > 1 && functionRunCounter < 4) {
-    animationFunctions[1](); //need to do this one an extra time since the second time we run this, it skips the first count
+  } else if (functionRunCounter == 2) {
+    runChaserUsingSawTooth(2); //need to do this one an extra time since the second time we run this, it skips the first count
   } else {
     runChaser(3); 
   }
@@ -96,31 +96,12 @@ void runChaser(uint8_t numRuns) {
   while(isRunning) chaser.runPattern(leds);
 }
 
-void chaserUsingSawToothWave() {
-  // this one kicks off the same sawtooth wave 9 times, just offset by a certain amount
-  // of time so they look like they are chasing eachother and as if it goes on forever
-  // the number of chaserCount, the second param passed into the beat8 function and
-  // the fadeToBlackBy number determine how they work together
-  // period of wave 60/bpm *1000
-  // so if you have 10 bpm you get 6000ms which means it takes 6sec for the wave to reach the end
-  // of the strip
-  
-  uint8_t waveSpeedBPM = 15;
-  uint8_t fadeToBlackSpeed = 45;
-  for (uint8_t chaserCount = 0; chaserCount < 12; chaserCount++) {
-    uint8_t pos = map(beat8(waveSpeedBPM, chaserCount*330), 0, 255, 0, NUM_LEDS -1);
-    leds[pos] = redColor;
-  }
-
-  fadeToBlackBy(leds, NUM_LEDS, fadeToBlackSpeed);
-  FastLED.show();
-
-  int timeForOneFullWave = (60/waveSpeedBPM)*1000;
-  EVERY_N_MILLISECONDS(timeForOneFullWave*2) {
-    functionRunCounter++;
-    Serial.print("adding in chaserUsingSawTooth");
-    Serial.print("\n");
-  }
+void runChaserUsingSawTooth(uint8_t numRuns) {
+  Serial.print("run ChaserUsingSawTooth");
+  Serial.print("\n");
+  isRunning = true;
+  ChaserUsingSawTooth chaser = ChaserUsingSawTooth(NUM_LEDS, numRuns);
+  while(isRunning) chaser.runPattern(leds);
 }
 
 void twoSidedOnThenOff() {
