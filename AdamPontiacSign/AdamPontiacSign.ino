@@ -26,11 +26,13 @@ static fn animationFunctions[5];
 
 void finishedPattern() {
   fill_solid(leds, NUM_LEDS, CRGB::Black); //set all ledStrip to black once we get to the end
+  FastLED.show();
   nextPattern();
 }
 
 #include "Chaser.h"
 #include "Tracer.h"
+#include "TwoSidedOnAndOff.h"
 
 uint8_t chaserBeat = 0;
 void setup() {
@@ -50,8 +52,8 @@ void loop() {
     FastLED.show();
     delay(1000);
     Serial.print("---------Reset--------\n");
-  } else if (functionRunCounter < 2) {
-    animationFunctions[0]();
+  } else if (functionRunCounter == 0) {
+    runTwoSidedOnAndOff(2);
   } else if (functionRunCounter == 1) {
     runTracer(3); //need to do this one an extra time since the second time we run this, it skips the first count
   } else if (functionRunCounter > 1 && functionRunCounter < 4) {
@@ -68,6 +70,14 @@ void loop() {
 void nextPattern() {
   isRunning = false;
   functionRunCounter = functionRunCounter+1;
+}
+
+void runTwoSidedOnAndOff(uint8_t numRuns) {
+  Serial.print("run two sided on and off");
+  Serial.print("\n");
+  isRunning = true;
+  TwoSidedOnAndOff twoSidedOnAndOff = TwoSidedOnAndOff(NUM_LEDS, numRuns);
+  while(isRunning) twoSidedOnAndOff.runPattern(leds);
 }
 
 void runTracer(uint8_t numRuns) {
