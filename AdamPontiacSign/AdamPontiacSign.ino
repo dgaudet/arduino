@@ -25,9 +25,11 @@ typedef void (*fn)();
 static fn animationFunctions[5];
 
 void finishedPattern() {
+  fill_solid(leds, NUM_LEDS, CRGB::Black); //set all ledStrip to black once we get to the end
   nextPattern();
 }
 
+#include "Chaser.h"
 #include "Tracer.h"
 
 uint8_t chaserBeat = 0;
@@ -37,14 +39,12 @@ void setup() {
   FastLED.setBrightness(20);
 
   animationFunctions[0] = twoSidedOnThenOff;
-  animationFunctions[1] = tracer;
-  animationFunctions[2] = chaserUsingSawToothWave;
-  animationFunctions[3] = fadeOffThenOn;
-  animationFunctions[4] = chaser;
+  animationFunctions[1] = chaserUsingSawToothWave;
+  animationFunctions[2] = fadeOffThenOn;
 }
 
 void loop() {
-  if (functionRunCounter == 13) {
+  if (functionRunCounter == 5) {
     functionRunCounter = 0;
     fill_solid(leds, NUM_LEDS, blackColor);
     FastLED.show();
@@ -52,15 +52,12 @@ void loop() {
     Serial.print("---------Reset--------\n");
   } else if (functionRunCounter < 2) {
     animationFunctions[0]();
-  } else if (functionRunCounter > 1 && functionRunCounter < 5) {
+  } else if (functionRunCounter == 1) {
     runTracer(3); //need to do this one an extra time since the second time we run this, it skips the first count
-  } else if (functionRunCounter > 4 && functionRunCounter < 6) {
-    animationFunctions[2](); //need to do this one an extra time since the second time we run this, it skips the first count
-  } else if (functionRunCounter > 5 && functionRunCounter < 10) {
-    animationFunctions[3]();
-    chaserBeat = 0;
+  } else if (functionRunCounter > 1 && functionRunCounter < 4) {
+    animationFunctions[1](); //need to do this one an extra time since the second time we run this, it skips the first count
   } else {
-    animationFunctions[4](); //need to do this one an extra time since the second time we run this, it skips the first count
+    runChaser(3); 
   }
 
   EVERY_N_MILLISECONDS(1000) {
@@ -74,66 +71,19 @@ void nextPattern() {
 }
 
 void runTracer(uint8_t numRuns) {
-  Serial.print("run tracer dot");
+  Serial.print("run tracer");
   Serial.print("\n");
   isRunning = true;
   Tracer tracer = Tracer(NUM_LEDS, numRuns);
   while(isRunning) tracer.runPattern(leds);
 }
 
-void chaser() {
-  // this function will light up all leds one at a time from the start to the end
-  // then on the way back it will turn each led off one at a time to the start
-  // A sinBeat is the number of the led in the leds array too light up from 0 to number of leds
-  // I needed to add 2 sinBeat's because once I started using over 85 leds it was
-  // skipping a few numbers I think because it was going through the numbers too fast
-  uint8_t waveSpeedBPM = 10;
-  chaserBeat = beatsin8(waveSpeedBPM, 0, NUM_LEDS -1, 0, 0);
-  uint8_t sinBeat2 = chaserBeat - 1;
-  CRGB color;
-  if (upDown == 0){
-    color = redColor;
-  } else {
-    color = CRGB::Black;
-  }
-  if (chaserBeat == 0) {
-    upDown = 0;
-  }
-  if (chaserBeat == NUM_LEDS -1) {
-    upDown = 1;
-  }
-  
-  leds[chaserBeat] = color;
-  leds[sinBeat2] = color;
-  FastLED.show();
-
-  int timeForOneFullWave = (60/waveSpeedBPM)*1000;
-  EVERY_N_MILLISECONDS(timeForOneFullWave*1.75) {
-    functionRunCounter++;
-    Serial.print("adding in chaser");
-    Serial.print("\n");
-  }
-}
-
-void tracer() {
-  // this one uses a wave where it goes from the start to the end of the strip
-  // then back the opposite direction but has a nice tail and fade out effect
-  uint8_t waveSpeedBPM = 20;
-  uint8_t sinBeat1 = beatsin8(waveSpeedBPM, 0, NUM_LEDS -1, 0, 0);
-  uint8_t sinBeat2 = sinBeat1 - 1;
-  leds[sinBeat1] = redColor;
-  leds[sinBeat2] = redColor;
-  
-  fadeToBlackBy(leds, NUM_LEDS, 20);
-  FastLED.show();
-
-  int timeForOneFullWave = (60/waveSpeedBPM)*1000;
-  EVERY_N_MILLISECONDS(timeForOneFullWave*2) {
-    functionRunCounter++;
-    Serial.print("adding in tracer");
-    Serial.print("\n");
-    fill_solid(leds, NUM_LEDS, CRGB::Black); //set all leds to black once we get to the end
-  }
+void runChaser(uint8_t numRuns) {
+  Serial.print("run chaser");
+  Serial.print("\n");
+  isRunning = true;
+  Chaser chaser = Chaser(NUM_LEDS, numRuns);
+  while(isRunning) chaser.runPattern(leds);
 }
 
 void chaserUsingSawToothWave() {
