@@ -4,7 +4,7 @@
 // this is the palette blending section of the video
 
 #define NUM_LEDS 18
-#define DATA_PIN 8
+#define DATA_PIN 2
 CRGB leds[NUM_LEDS];
 
 uint8_t colorIndex[NUM_LEDS];

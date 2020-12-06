@@ -3,7 +3,7 @@
 // video FastLED basics 3 - https://www.youtube.com/watch?v=Ukq0tH2Tnkc
 
 #define NUM_LEDS 18
-#define DATA_PIN 8
+#define DATA_PIN 2
 CRGB leds[NUM_LEDS];
 
 uint8_t paletteIndex = 0;
