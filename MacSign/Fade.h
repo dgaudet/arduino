@@ -1,0 +1,47 @@
+#include "Arduino.h"
+
+class Fade {
+  public:
+    Fade(
+      uint8_t start,
+      uint8_t end,
+      unsigned long interval
+    )
+    {
+      _start = start;
+      _end = end;
+      _interval = interval;
+      _currentNum = start;
+    };
+
+    uint8_t startFader(int fadeAmount);
+  private:
+    uint8_t _start;
+    uint8_t _end;
+    unsigned long _interval;
+    
+    uint8_t _currentNum;
+    unsigned long _previousMillis = 0;
+};
+
+uint8_t Fade::startFader(int fadeAmount) {
+  unsigned long currentMillis = millis();
+
+  if (currentMillis - _previousMillis >= _interval) {
+    _previousMillis = currentMillis;
+
+    _currentNum = _currentNum + fadeAmount;
+    if (_currentNum > _end) {
+      _currentNum = _end;
+    } 
+    if (_currentNum < _start) {
+      _currentNum = _start;
+    }
+  }
+  
+  Serial.print("--start fader called-- ");
+  Serial.print(" - ");
+  Serial.print(_currentNum);
+  Serial.print("\n");
+  return _currentNum;
+}
