@@ -5,13 +5,15 @@ class Fade {
     Fade(
       uint8_t start,
       uint8_t end,
-      unsigned long interval
+      unsigned long interval,
+      bool showLog
     )
     {
       _start = start;
       _end = end;
       _interval = interval;
       _currentNum = start;
+      _showLog = showLog;
     };
 
     uint8_t startFader(int fadeAmount);
@@ -22,6 +24,7 @@ class Fade {
     
     uint8_t _currentNum;
     unsigned long _previousMillis = 0;
+    bool _showLog;
 };
 
 uint8_t Fade::startFader(int fadeAmount) {
@@ -38,10 +41,13 @@ uint8_t Fade::startFader(int fadeAmount) {
       _currentNum = _start;
     }
   }
+
+  if (_showLog){
+    Serial.print("--start fader called-- ");
+    Serial.print(" - ");
+    Serial.print(_currentNum);
+    Serial.print("\n");  
+  }
   
-  Serial.print("--start fader called-- ");
-  Serial.print(" - ");
-  Serial.print(_currentNum);
-  Serial.print("\n");
   return _currentNum;
 }
