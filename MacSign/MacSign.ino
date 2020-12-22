@@ -19,9 +19,13 @@
 #define TOOLS_DATA_PIN 2
 
 uint8_t brightness = 0;
-uint8_t maxBrightness = 100;
-unsigned long letterFadeInterval = 50;
-unsigned long letterStartDelay = 1000;
+// I need to stop at 245 instead of 255 because I bump up the brightness at an interval of 5
+// so stopping higher causes problems where sometimes we roll over from 255 to 0
+uint8_t maxBrightness = 245;
+// the letterFadeInterval and letterStartDelay are tightly integrated if you fade to slowly
+// it won't make it to the full amount before it starts fading down
+unsigned long letterFadeInterval = 25;
+unsigned long letterStartDelay = 1500;
 bool upDown = true;
 unsigned long previousMillis = 0;
 
@@ -51,17 +55,36 @@ void loop() {
   // 255 - 4.72v
 //  analogWrite(M_DATA_PIN, 255);
   fadeClass();
+//  allFadeOnThenOff();
+}
+
+void allFadeOnThenOff() {
+  unsigned long currentMillis = millis();
+  int macFadeAmount = 5;
+  if (!upDown) {
+    macFadeAmount = -1 * macFadeAmount;
+  }
+  
+  uint8_t current_mFade = mFader.startFader(macFadeAmount);
+  analogWrite(M_DATA_PIN, current_mFade);
+  analogWrite(A_DATA_PIN, current_mFade);
+  analogWrite(C_DATA_PIN, current_mFade);
+  toolsAnimation(current_mFade);
+
+  if (currentMillis - previousMillis >= letterStartDelay*2) {
+    upDown = false;
+  }
+  if (current_mFade == 0 && !upDown) {
+    finishedPattern();
+  }
 }
 
 void fadeClass() {
   unsigned long currentMillis = millis();
   int macFadeAmount = 5;
-  int toolsFadeAmount = 5;
   if (!upDown) {
     macFadeAmount = -1 * macFadeAmount;
-    toolsFadeAmount = -1 *toolsFadeAmount;
   }
-  
 
   uint8_t current_mFade = mFader.startFader(macFadeAmount);
   analogWrite(M_DATA_PIN, current_mFade);
@@ -72,25 +95,15 @@ void fadeClass() {
     analogWrite(C_DATA_PIN, cFader.startFader(macFadeAmount));
   }
   if (currentMillis - previousMillis >= letterStartDelay*3) {
-    uint8_t tool_fade = toolFader.startFader(toolsFadeAmount);
+    uint8_t tool_fade = toolFader.startFader(macFadeAmount);
     toolsAnimation(tool_fade);
   }
   if (currentMillis - previousMillis >= letterStartDelay*5) {
     upDown = false;
   }
   if (current_mFade == 0 && !upDown) {
-//    reset();
     finishedPattern();
   }
-}
-
-void reset() {
-  Serial.print("------fade at 0-----\n");
-  Serial.print("------fade at 0-----\n");
-  Serial.print("------fade at 0-----\n");
-  Serial.print("------fade at 0-----\n");
-  upDown = true;
-  previousMillis = millis();
 }
 
 void finishedPattern() {
@@ -106,7 +119,9 @@ void finishedPattern() {
 }
 
 void toolsAnimation(uint8_t hue) {
-  CHSV color = CHSV(137, 0, hue); // white
+//  CHSV color = CHSV(137, 0, hue); // white
+  // using red instead of white because the white is blue sometimes and yellow others during fade
+  CHSV color = CHSV(0, 255, hue); //red
 //  CHSV color = CHSV(255, 100, 100); //green
 //  fill_solid(toolLeds, NUM_TOOL_LEDS, color); //set all ledStrip to black once we get to the end
 
