@@ -34,7 +34,7 @@ Fade aFader = Fade(0, maxBrightness, letterFadeInterval, false);
 Fade cFader = Fade(0, maxBrightness, letterFadeInterval, false);
 Fade toolFader = Fade(0, maxBrightness, letterFadeInterval, true);
 
-#define NUM_TOOL_LEDS 55
+#define NUM_TOOL_LEDS 53
 CRGB toolLeds[NUM_TOOL_LEDS];
 
 
@@ -54,8 +54,9 @@ void loop() {
   // 200 - 3.69v
   // 255 - 4.72v
 //  analogWrite(M_DATA_PIN, 255);
-  fadeClass();
+  lightEachLetterThenTools();
 //  allFadeOnThenOff();
+//  allLeftToRight();
 }
 
 void allFadeOnThenOff() {
@@ -79,7 +80,7 @@ void allFadeOnThenOff() {
   }
 }
 
-void fadeClass() {
+void lightEachLetterThenTools() {
   unsigned long currentMillis = millis();
   int macFadeAmount = 5;
   if (!upDown) {
@@ -140,6 +141,35 @@ void toolsAnimation(uint8_t hue) {
   colorSection(toolLeds, color, 41, 44);
   colorSection(toolLeds, color, 46, 48);
   colorSection(toolLeds, color, 50, 52);
+  FastLED.show();
+}
+
+bool leftRight = true;
+uint8_t leftCounter = 0;
+void allLeftToRight() {
+  CHSV redColor = CHSV(0, 255, 255); //red
+  CHSV blackColor = CHSV(0, 0, 0);
+  CHSV currentColor = redColor;
+  
+  EVERY_N_MILLISECONDS(25) {
+    if (leftRight) {
+      currentColor = redColor;
+    } else {
+      currentColor = blackColor;
+    }
+    colorSection(toolLeds, currentColor, 0, leftCounter);
+    colorSection(toolLeds, currentColor, NUM_TOOL_LEDS-4 - leftCounter, NUM_TOOL_LEDS-1);
+    
+    if (leftCounter > NUM_TOOL_LEDS/2) {
+      leftRight = !leftRight;
+      leftCounter = 0;
+      Serial.print("------finished pattern-----\n");
+    }
+    leftCounter++;
+    Serial.print(leftCounter);
+    Serial.print("\n");
+  }
+  
   FastLED.show();
 }
 
