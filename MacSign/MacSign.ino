@@ -1,5 +1,6 @@
 #include <FastLED.h>
 #include "Fade.h"
+#include "LeftToRightScroller.h"
 
 // using 450 ma at 255 brightness full white strip
 // using 178 ma at 100 brightness full white strip
@@ -37,6 +38,7 @@ Fade toolFader = Fade(0, maxBrightness, letterFadeInterval, true);
 #define NUM_TOOL_LEDS 53
 CRGB toolLeds[NUM_TOOL_LEDS];
 
+bool isRunning = false;
 
 void setup() {
   pinMode(M_DATA_PIN, OUTPUT);
@@ -56,7 +58,7 @@ void loop() {
 //  analogWrite(M_DATA_PIN, 255);
   lightEachLetterThenTools();
 //  allFadeOnThenOff();
-//  allLeftToRight();
+//  runLeftToRightScroller();
 }
 
 void allFadeOnThenOff() {
@@ -117,6 +119,7 @@ void finishedPattern() {
   FastLED.show();
   delay(1000);
   previousMillis = millis();
+  isRunning = false;
 }
 
 void toolsAnimation(uint8_t hue) {
@@ -144,51 +147,17 @@ void toolsAnimation(uint8_t hue) {
   FastLED.show();
 }
 
-bool leftRight = true;
-uint8_t letterCounter = 0;
-uint8_t leftCounter = 0;
-void allLeftToRight() {
-  CHSV redColor = CHSV(0, 255, 255); //red
-  CHSV blackColor = CHSV(0, 0, 0);
-  CHSV currentColor = redColor;
+void runLeftToRightScroller() {
+  isRunning = true;
   uint8_t pins[3] = {
     M_DATA_PIN,
     A_DATA_PIN,
     C_DATA_PIN
   };
-  uint8_t currentBrightness = maxBrightness;
-
-  EVERY_N_MILLISECONDS(150) {
-    if (leftRight) {
-      currentBrightness = 125;
-    } else {
-      currentBrightness = 0;
-    }
-    analogWrite(pins[letterCounter], currentBrightness);
-    letterCounter++; 
-  }
+  CHSV redColor = CHSV(0, 255, maxBrightness); //red
   
-  EVERY_N_MILLISECONDS(25) {
-    if (leftRight) {
-      currentColor = redColor;
-    } else {
-      currentColor = blackColor;
-    }
-    colorSection(toolLeds, currentColor, 0, leftCounter);
-    colorSection(toolLeds, currentColor, NUM_TOOL_LEDS-4 - leftCounter, NUM_TOOL_LEDS-1);
-    
-    if (leftCounter > NUM_TOOL_LEDS/2) {
-      leftRight = !leftRight;
-      leftCounter = 0;
-      letterCounter = 0;
-      Serial.print("------finished pattern-----\n");
-    }
-    leftCounter++;
-    Serial.print(leftCounter);
-    Serial.print("\n");
-  }
-  
-  FastLED.show();
+  LeftToRightScroller scroller = LeftToRightScroller(NUM_TOOL_LEDS, 2, maxBrightness, finishedPattern);
+  while(isRunning) scroller.runPattern(pins, toolLeds, redColor);
 }
 
 void colorSection(CRGB ledStrip[], CHSV color, uint8_t first, uint8_t last) {
