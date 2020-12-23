@@ -28,18 +28,12 @@ uint8_t maxBrightness = 245;
 // it won't make it to the full amount before it starts fading down
 unsigned long letterFadeInterval = 25;
 unsigned long letterStartDelay = 1500;
-bool upDown = true;
-unsigned long previousMillis = 0;
-
-Fade mFader = Fade(0, maxBrightness, letterFadeInterval, false);
-Fade aFader = Fade(0, maxBrightness, letterFadeInterval, false);
-Fade cFader = Fade(0, maxBrightness, letterFadeInterval, false);
-Fade toolFader = Fade(0, maxBrightness, letterFadeInterval, true);
 
 #define NUM_TOOL_LEDS 53
 CRGB toolLeds[NUM_TOOL_LEDS];
 
 bool isRunning = false;
+uint8_t functionRunCounter = 0;
 
 uint8_t analogLetterPins[3] = {
   M_DATA_PIN,
@@ -50,9 +44,9 @@ CHSV redColor = CHSV(0, 255, maxBrightness); //red
 CHSV defaultToolsColor = redColor;
 
 void setup() {
-  pinMode(analogLetterPins[0], OUTPUT);
-  pinMode(analogLetterPins[1], OUTPUT);
-  pinMode(analogLetterPins[2], OUTPUT);
+  for (int pinCounter = 0; pinCounter <= sizeof(analogLetterPins); pinCounter++) {
+    pinMode(analogLetterPins[pinCounter], OUTPUT);
+  }
   FastLED.addLeds<WS2812B, TOOLS_DATA_PIN, GRB>(toolLeds, NUM_TOOL_LEDS);
   FastLED.setBrightness(255);
   fill_solid(toolLeds, NUM_TOOL_LEDS, CRGB::Black);
@@ -61,29 +55,40 @@ void setup() {
 }
 
 void loop() {
-//  analogWrite(M_DATA_PIN, 255);
-//  lightEachLetterThenTools();
-  runLightEachLetterThenTools();
-//  runLeftToRightScroller();
-//  runAllFadeOnThenOff();
+  switch (functionRunCounter) {
+    case 0:
+      runLightEachLetterThenTools(2);
+      break;
+    case 1:
+      runLeftToRightScroller(2);
+      break;
+    default:
+      runAllFadeOnThenOff(2);
+      break;
+  }
 }
 
 void finishedPattern() {
   Serial.print("------finished pattern-----\n");
-  analogWrite(M_DATA_PIN, 0);
-  analogWrite(A_DATA_PIN, 0);
-  analogWrite(C_DATA_PIN, 0);
+  for (int pinCounter = 0; pinCounter <= sizeof(analogLetterPins); pinCounter++) {
+    analogWrite(analogLetterPins[pinCounter], 0);
+  }
   fill_solid(toolLeds, NUM_TOOL_LEDS, CRGB::Black);
   FastLED.show();
   delay(1000);
   isRunning = false;
+  functionRunCounter++;
+  if (functionRunCounter >=3) {
+    functionRunCounter = 0;
+    Serial.print("---------Reset--------\n");
+  }
 }
 
-void runLightEachLetterThenTools() {
+void runLightEachLetterThenTools(uint8_t numRuns) {
   isRunning = true;
   
   LightEachLetterThenTools animation = LightEachLetterThenTools(
-    2,
+    numRuns,
     maxBrightness,
     letterFadeInterval,
     letterStartDelay,
@@ -92,11 +97,11 @@ void runLightEachLetterThenTools() {
   while(isRunning) animation.runPattern(analogLetterPins, toolLeds, defaultToolsColor);
 }
 
-void runAllFadeOnThenOff() {
+void runAllFadeOnThenOff(uint8_t numRuns) {
   isRunning = true;
   
   FadeOffAndOn fader = FadeOffAndOn(
-    2,
+    numRuns,
     maxBrightness,
     letterFadeInterval,
     finishedPattern
@@ -104,9 +109,9 @@ void runAllFadeOnThenOff() {
   while(isRunning) fader.runPattern(analogLetterPins, toolLeds, defaultToolsColor);
 }
 
-void runLeftToRightScroller() {
+void runLeftToRightScroller(uint8_t numRuns) {
   isRunning = true;
   
-  LeftToRightScroller scroller = LeftToRightScroller(NUM_TOOL_LEDS, 2, maxBrightness, finishedPattern);
+  LeftToRightScroller scroller = LeftToRightScroller(NUM_TOOL_LEDS, numRuns, maxBrightness, finishedPattern);
   while(isRunning) scroller.runPattern(analogLetterPins, toolLeds, defaultToolsColor);
 }
