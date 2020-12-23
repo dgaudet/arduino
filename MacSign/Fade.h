@@ -2,6 +2,8 @@
 
 class Fade {
   public:
+    Fade() {};
+  
     Fade(
       uint8_t start,
       uint8_t end,
@@ -40,13 +42,13 @@ uint8_t Fade::startFader(int fadeAmount) {
     if (_currentNum < _start) {
       _currentNum = _start;
     }
-  }
 
-  if (_showLog){
-    Serial.print("--start fader called-- ");
-    Serial.print(" - ");
-    Serial.print(_currentNum);
-    Serial.print("\n");  
+    if (_showLog){
+      Serial.print("--start fader called-- ");
+      Serial.print(" - ");
+      Serial.print(_currentNum);
+      Serial.print("\n");  
+    }
   }
   
   return _currentNum;
