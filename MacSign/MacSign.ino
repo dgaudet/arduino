@@ -145,11 +145,28 @@ void toolsAnimation(uint8_t hue) {
 }
 
 bool leftRight = true;
+uint8_t letterCounter = 0;
 uint8_t leftCounter = 0;
 void allLeftToRight() {
   CHSV redColor = CHSV(0, 255, 255); //red
   CHSV blackColor = CHSV(0, 0, 0);
   CHSV currentColor = redColor;
+  uint8_t pins[3] = {
+    M_DATA_PIN,
+    A_DATA_PIN,
+    C_DATA_PIN
+  };
+  uint8_t currentBrightness = maxBrightness;
+
+  EVERY_N_MILLISECONDS(150) {
+    if (leftRight) {
+      currentBrightness = 125;
+    } else {
+      currentBrightness = 0;
+    }
+    analogWrite(pins[letterCounter], currentBrightness);
+    letterCounter++; 
+  }
   
   EVERY_N_MILLISECONDS(25) {
     if (leftRight) {
@@ -163,6 +180,7 @@ void allLeftToRight() {
     if (leftCounter > NUM_TOOL_LEDS/2) {
       leftRight = !leftRight;
       leftCounter = 0;
+      letterCounter = 0;
       Serial.print("------finished pattern-----\n");
     }
     leftCounter++;
