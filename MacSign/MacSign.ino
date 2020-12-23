@@ -1,7 +1,7 @@
 #include <FastLED.h>
-#include "Fade.h"
 #include "FadeOffAndOn.h"
 #include "LeftToRightScroller.h"
+#include "LightEachLetterThenTools.h"
 
 // using 450 ma at 255 brightness full white strip
 // using 178 ma at 100 brightness full white strip
@@ -50,9 +50,9 @@ CHSV redColor = CHSV(0, 255, maxBrightness); //red
 CHSV defaultToolsColor = redColor;
 
 void setup() {
-  pinMode(M_DATA_PIN, OUTPUT);
-  pinMode(A_DATA_PIN, OUTPUT);
-  pinMode(C_DATA_PIN, OUTPUT);
+  pinMode(analogLetterPins[0], OUTPUT);
+  pinMode(analogLetterPins[1], OUTPUT);
+  pinMode(analogLetterPins[2], OUTPUT);
   FastLED.addLeds<WS2812B, TOOLS_DATA_PIN, GRB>(toolLeds, NUM_TOOL_LEDS);
   FastLED.setBrightness(255);
   fill_solid(toolLeds, NUM_TOOL_LEDS, CRGB::Black);
@@ -61,54 +61,35 @@ void setup() {
 }
 
 void loop() {
-  // 100 - 1.86v
-  // 200 - 3.69v
-  // 255 - 4.72v
 //  analogWrite(M_DATA_PIN, 255);
-  lightEachLetterThenTools();
-//  allFadeOnThenOff();
+//  lightEachLetterThenTools();
+  runLightEachLetterThenTools();
 //  runLeftToRightScroller();
 //  runAllFadeOnThenOff();
 }
 
-void lightEachLetterThenTools() {
-  unsigned long currentMillis = millis();
-  int macFadeAmount = 5;
-  if (!upDown) {
-    macFadeAmount = -1 * macFadeAmount;
-  }
-
-  uint8_t current_mFade = mFader.startFader(macFadeAmount);
-  analogWrite(M_DATA_PIN, current_mFade);
-  if (currentMillis - previousMillis >= letterStartDelay) {
-    analogWrite(A_DATA_PIN, aFader.startFader(macFadeAmount));
-  }
-  if (currentMillis - previousMillis >= letterStartDelay*2) {
-    analogWrite(C_DATA_PIN, cFader.startFader(macFadeAmount));
-  }
-  if (currentMillis - previousMillis >= letterStartDelay*3) {
-    uint8_t tool_fade = toolFader.startFader(macFadeAmount);
-    toolsAnimation(tool_fade);
-  }
-  if (currentMillis - previousMillis >= letterStartDelay*5) {
-    upDown = false;
-  }
-  if (current_mFade == 0 && !upDown) {
-    finishedPattern();
-  }
-}
-
 void finishedPattern() {
   Serial.print("------finished pattern-----\n");
-  upDown = true;
   analogWrite(M_DATA_PIN, 0);
   analogWrite(A_DATA_PIN, 0);
   analogWrite(C_DATA_PIN, 0);
   fill_solid(toolLeds, NUM_TOOL_LEDS, CRGB::Black);
   FastLED.show();
   delay(1000);
-  previousMillis = millis();
   isRunning = false;
+}
+
+void runLightEachLetterThenTools() {
+  isRunning = true;
+  
+  LightEachLetterThenTools animation = LightEachLetterThenTools(
+    2,
+    maxBrightness,
+    letterFadeInterval,
+    letterStartDelay,
+    finishedPattern
+  );
+  while(isRunning) animation.runPattern(analogLetterPins, toolLeds, defaultToolsColor);
 }
 
 void runAllFadeOnThenOff() {
@@ -123,41 +104,9 @@ void runAllFadeOnThenOff() {
   while(isRunning) fader.runPattern(analogLetterPins, toolLeds, defaultToolsColor);
 }
 
-
-void toolsAnimation(uint8_t hue) {
-//  CHSV color = CHSV(137, 0, hue); // white
-  // using red instead of white because the white is blue sometimes and yellow others during fade
-  CHSV color = CHSV(0, 255, hue); //red
-//  CHSV color = CHSV(255, 100, 100); //green
-//  fill_solid(toolLeds, NUM_TOOL_LEDS, color); //set all ledStrip to black once we get to the end
-
-  //top line
-  colorSection(toolLeds, color, 0, 8);
-  colorSection(toolLeds, color, 10, 14);
-  colorSection(toolLeds, color, 15, 16);
-  colorSection(toolLeds, color, 19, 22);
-
-  //right side
-  colorSection(toolLeds, color, 24, 25);
-
-  //bottom
-  colorSection(toolLeds, color, 27, 34);
-  colorSection(toolLeds, color, 36, 39);
-  colorSection(toolLeds, color, 41, 44);
-  colorSection(toolLeds, color, 46, 48);
-  colorSection(toolLeds, color, 50, 52);
-  FastLED.show();
-}
-
 void runLeftToRightScroller() {
   isRunning = true;
   
   LeftToRightScroller scroller = LeftToRightScroller(NUM_TOOL_LEDS, 2, maxBrightness, finishedPattern);
   while(isRunning) scroller.runPattern(analogLetterPins, toolLeds, defaultToolsColor);
-}
-
-void colorSection(CRGB ledStrip[], CHSV color, uint8_t first, uint8_t last) {
-  for(uint8_t ledCounter = first; ledCounter <= last; ledCounter ++) {
-    ledStrip[ledCounter] = color;
-  }
 }
