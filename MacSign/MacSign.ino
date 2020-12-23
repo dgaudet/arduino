@@ -1,5 +1,6 @@
 #include <FastLED.h>
 #include "Fade.h"
+#include "FadeOffAndOn.h"
 #include "LeftToRightScroller.h"
 
 // using 450 ma at 255 brightness full white strip
@@ -40,6 +41,14 @@ CRGB toolLeds[NUM_TOOL_LEDS];
 
 bool isRunning = false;
 
+uint8_t analogLetterPins[3] = {
+  M_DATA_PIN,
+  A_DATA_PIN,
+  C_DATA_PIN
+};
+CHSV redColor = CHSV(0, 255, maxBrightness); //red
+CHSV defaultToolsColor = redColor;
+
 void setup() {
   pinMode(M_DATA_PIN, OUTPUT);
   pinMode(A_DATA_PIN, OUTPUT);
@@ -59,27 +68,7 @@ void loop() {
   lightEachLetterThenTools();
 //  allFadeOnThenOff();
 //  runLeftToRightScroller();
-}
-
-void allFadeOnThenOff() {
-  unsigned long currentMillis = millis();
-  int macFadeAmount = 5;
-  if (!upDown) {
-    macFadeAmount = -1 * macFadeAmount;
-  }
-  
-  uint8_t current_mFade = mFader.startFader(macFadeAmount);
-  analogWrite(M_DATA_PIN, current_mFade);
-  analogWrite(A_DATA_PIN, current_mFade);
-  analogWrite(C_DATA_PIN, current_mFade);
-  toolsAnimation(current_mFade);
-
-  if (currentMillis - previousMillis >= letterStartDelay*2) {
-    upDown = false;
-  }
-  if (current_mFade == 0 && !upDown) {
-    finishedPattern();
-  }
+//  runAllFadeOnThenOff();
 }
 
 void lightEachLetterThenTools() {
@@ -122,6 +111,19 @@ void finishedPattern() {
   isRunning = false;
 }
 
+void runAllFadeOnThenOff() {
+  isRunning = true;
+  
+  FadeOffAndOn fader = FadeOffAndOn(
+    2,
+    maxBrightness,
+    letterFadeInterval,
+    finishedPattern
+  );
+  while(isRunning) fader.runPattern(analogLetterPins, toolLeds, defaultToolsColor);
+}
+
+
 void toolsAnimation(uint8_t hue) {
 //  CHSV color = CHSV(137, 0, hue); // white
   // using red instead of white because the white is blue sometimes and yellow others during fade
@@ -149,15 +151,9 @@ void toolsAnimation(uint8_t hue) {
 
 void runLeftToRightScroller() {
   isRunning = true;
-  uint8_t pins[3] = {
-    M_DATA_PIN,
-    A_DATA_PIN,
-    C_DATA_PIN
-  };
-  CHSV redColor = CHSV(0, 255, maxBrightness); //red
   
   LeftToRightScroller scroller = LeftToRightScroller(NUM_TOOL_LEDS, 2, maxBrightness, finishedPattern);
-  while(isRunning) scroller.runPattern(pins, toolLeds, redColor);
+  while(isRunning) scroller.runPattern(analogLetterPins, toolLeds, defaultToolsColor);
 }
 
 void colorSection(CRGB ledStrip[], CHSV color, uint8_t first, uint8_t last) {
