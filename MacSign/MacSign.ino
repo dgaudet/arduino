@@ -112,6 +112,11 @@ void runAllFadeOnThenOff(uint8_t numRuns) {
 void runLeftToRightScroller(uint8_t numRuns) {
   isRunning = true;
   
-  LeftToRightScroller scroller = LeftToRightScroller(NUM_TOOL_LEDS, numRuns, maxBrightness, finishedPattern);
+  LeftToRightScroller scroller = LeftToRightScroller(
+    NUM_TOOL_LEDS,
+    numRuns,
+    maxBrightness,
+    finishedPattern
+  );
   while(isRunning) scroller.runPattern(analogLetterPins, toolLeds, defaultToolsColor);
 }
