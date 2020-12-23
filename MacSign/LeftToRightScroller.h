@@ -1,5 +1,7 @@
 #include "Arduino.h"
 
+// there is an issue where if you try to use all tool leds then the animation messes up
+
 class LeftToRightScroller {
   private:
     void (*finishedPatternCB)();
@@ -54,14 +56,15 @@ class LeftToRightScroller {
         }
         colorSection(ledStrip, currentColor, 0, leftCounter);
         colorSection(ledStrip, currentColor, numLeds-4 - leftCounter, numLeds-1);
-        
+
+        // subtracting 5 here because of an issue where if we light up all leds it
+        // the animation gets crazy
         if (leftCounter > numLeds/2-5) {
           leftRight = !leftRight;
           leftCounter = 0;
           letterCounter = 0;
           runCounter++;
           if (runCounter >= numRuns*2) {
-            Serial.print("------finished pattern-----\n");
             finishedPatternCB();
           }
         }
