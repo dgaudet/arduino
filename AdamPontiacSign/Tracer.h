@@ -50,7 +50,6 @@ class Tracer {
 
     boolean upDown = true;
     uint8_t numRuns;
-    uint8_t waveSpeedBPM = 20;
     int lightCounter = 0;
     int numLeds;
     uint8_t runCounter = 0;
