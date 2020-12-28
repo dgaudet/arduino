@@ -6,9 +6,6 @@
 #include "FadeOffThenOn.h"
 
 // bugs/new features
-// when starting each new function, the starting position might not be correct
-// chaser stops randomly, not at the end of a full run, and starts randomly
-// tracer starts randomly
 
 #define NUM_LEDS 147
 #define DATA_PIN 2
