@@ -13,6 +13,7 @@
 #define NUM_LEDS 147
 #define DATA_PIN 2
 CRGB leds[NUM_LEDS];
+uint8_t MAX_BRIGHTNESS = 255;
 
 bool isRunning = false;
 uint8_t functionRunCounter = 0;
@@ -21,7 +22,9 @@ CHSV redColor = CHSV(0, 255, 255); // bright red
 void setup() {
   FastLED.addLeds<WS2812B, DATA_PIN, GRB>(leds, NUM_LEDS);
   Serial.begin(9600);
-  FastLED.setBrightness(20);
+  FastLED.setBrightness(40);
+  fill_solid(leds, 20, CRGB::Black);
+  FastLED.show();
 }
 
 void loop() {
@@ -33,13 +36,17 @@ void loop() {
       runTracer(2);
       break;
     case 2:
-      runFadeOffThenOn(2);
+      runFadeOffThenOn(2, 1000);
       break;
     case 3:
       runChaserUsingSawTooth(2);
       break;
+    case 4:
+      runTracer(2);
+//      runChaser(2);
+      break;
     default:
-      runChaser(2);
+      runFadeOffThenOn(1, 20000);
       break;
   }
 }
@@ -52,8 +59,8 @@ void finishedPattern() {
 
 void nextPattern() {
   isRunning = false;
-  uint8_t numAnimations = 5;
-  functionRunCounter = (functionRunCounter+1);
+  uint8_t numAnimations = 6;
+  functionRunCounter = functionRunCounter+1;
   if(functionRunCounter >= numAnimations) {
     functionRunCounter = 0;
     Serial.print("---------Reset--------\n");
@@ -92,10 +99,10 @@ void runChaserUsingSawTooth(uint8_t numRuns) {
   while(isRunning) chaser.runPattern(leds, redColor);
 }
 
-void runFadeOffThenOn(uint8_t numRuns) {
+void runFadeOffThenOn(uint8_t numRuns, unsigned long stayOnDelay) {
   Serial.print("run FadeOffThenOn");
   Serial.print("\n");
   isRunning = true;
-  FadeOffThenOn fader = FadeOffThenOn(NUM_LEDS, numRuns, finishedPattern);
+  FadeOffThenOn fader = FadeOffThenOn(NUM_LEDS, numRuns, MAX_BRIGHTNESS, stayOnDelay, finishedPattern);
   while(isRunning) fader.runPattern(leds, redColor);
 }
