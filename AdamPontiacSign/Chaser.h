@@ -9,53 +9,51 @@ class Chaser {
     {
       numLeds = numLedsInput;
       numRuns = numRunsInput;
+      finishedPatternCB = finishedCallBack;
     };
 
-    void runPattern(CRGB ledStrip[], CHSV color);
+    void runPattern(CRGB ledStrip[], CHSV ledColor) {
+      // this function will light up all leds one at a time from the start to the end
+      // then on the way back it will turn each led off one at a time to the start
+      CRGB color;
+
+      EVERY_N_MILLISECONDS(25) {
+        if (upDown) {
+          lightCounter++;
+          color = ledColor;
+        } else {
+          lightCounter--;
+          color = CRGB::Black;
+        }
+
+        if (lightCounter >= numLeds) {
+          upDown = false;
+          runCounter++;
+          Serial.print("adding in chaser");
+          Serial.print("\n");
+        }
+        if (lightCounter <= 0) {
+          upDown = true;
+          runCounter++;
+          Serial.print("adding in chaser");
+          Serial.print("\n");
+        }
+      }
+
+      if (runCounter == numRuns*2) {
+        finishedPatternCB();
+      }
+
+      ledStrip[lightCounter] = color;
+      FastLED.show();
+    }
+
   private:
     void (*finishedPatternCB)();
     
     uint8_t numRuns;
-    bool upDown = false;
-    uint8_t waveSpeedBPM = 10;
+    bool upDown = true;
     int numLeds;
+    int lightCounter = 0;
     uint8_t runCounter = 0;
-    uint8_t chaserBeat = 0;
 };
-
-void Chaser::runPattern(CRGB ledStrip[], CHSV ledColor) {
-  // this function will light up all leds one at a time from the start to the end
-  // then on the way back it will turn each led off one at a time to the start
-  // A sinBeat is the number of the led in the leds array too light up from 0 to number of leds
-  // I needed to add 2 sinBeat's because once I started using over 85 leds it was
-  // skipping a few numbers I think because it was going through the numbers too fast
-  uint8_t waveSpeedBPM = 10;
-  chaserBeat = beatsin8(waveSpeedBPM, 0, numLeds -1, 0, 0);
-  uint8_t sinBeat2 = chaserBeat - 1;
-  CRGB color;
-  if (upDown){
-    color = ledColor;
-  } else {
-    color = CRGB::Black;
-  }
-  if (chaserBeat == 0) {
-    upDown = false;
-  }
-  if (chaserBeat == numLeds -1) {
-    upDown = true;
-  }
-  
-  ledStrip[chaserBeat] = color;
-  ledStrip[sinBeat2] = color;
-  FastLED.show();
-
-  int timeForOneFullWave = (60/waveSpeedBPM)*1000;
-  EVERY_N_MILLISECONDS(timeForOneFullWave*1.75) {
-    runCounter++;
-    Serial.print("adding in chaser");
-    Serial.print("\n");
-    if (runCounter == numRuns) {
-      finishedPatternCB();
-    }
-  }
-}
