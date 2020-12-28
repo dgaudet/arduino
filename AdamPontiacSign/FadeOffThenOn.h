@@ -33,8 +33,8 @@ class FadeOffThenOn {
         } else {
           brightness--;
         }
-        if (brightness > maxBrightness){
-          brightness = maxBrightness;
+        if (brightness >= maxBrightness-1){
+          brightness = maxBrightness-1;
           if (stayOnTime > 0) {
             if (previousMillis == 0) {
               previousMillis = currentMillis;
