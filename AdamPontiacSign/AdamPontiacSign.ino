@@ -42,8 +42,7 @@ void loop() {
       runChaserUsingSawTooth(2);
       break;
     case 4:
-      runTracer(2);
-//      runChaser(2);
+      runChaser(2);
       break;
     default:
       runFadeOffThenOn(1, 20000);
