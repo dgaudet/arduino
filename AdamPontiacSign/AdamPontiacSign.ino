@@ -11,6 +11,7 @@
 #define DATA_PIN 2
 CRGB leds[NUM_LEDS];
 uint8_t MAX_BRIGHTNESS = 255;
+uint8_t ANIMATION_REPEATS = 2;
 
 bool isRunning = false;
 uint8_t functionRunCounter = 0;
@@ -27,19 +28,19 @@ void setup() {
 void loop() {
   switch (functionRunCounter) {
     case 0:
-      runTwoSidedOnAndOff(2);
+      runTwoSidedOnAndOff(ANIMATION_REPEATS);
       break;
     case 1:
-      runTracer(2);
+      runTracer(ANIMATION_REPEATS);
       break;
     case 2:
-      runFadeOffThenOn(2, 1000);
+      runFadeOffThenOn(ANIMATION_REPEATS, 1000);
       break;
     case 3:
-      runChaserUsingSawTooth(2);
+      runChaserUsingSawTooth(ANIMATION_REPEATS);
       break;
     case 4:
-      runChaser(2);
+      runChaser(ANIMATION_REPEATS);
       break;
     default:
       runFadeOffThenOn(1, 20000);
