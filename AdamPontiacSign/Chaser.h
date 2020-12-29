@@ -22,11 +22,8 @@ class Chaser {
       EVERY_N_MILLISECONDS(25) {
         if (lightCounter >= numLeds) {
           upDown = false;
-          runCounter++;
-          Serial.print("adding in chaser");
-          Serial.print("\n");
         }
-        if (lightCounter < 0) {
+        if (lightCounter == 0) {
           upDown = true;
           runCounter++;
           Serial.print("adding in chaser");
@@ -45,7 +42,7 @@ class Chaser {
         FastLED.show();
       }
 
-      if (runCounter == numRuns*2) {
+      if (runCounter >= numRuns+1) {
         finishedPatternCB();
       }
     }
