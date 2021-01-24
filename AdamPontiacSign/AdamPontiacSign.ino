@@ -5,9 +5,11 @@
 #include "ChaserUsingSawTooth.h"
 #include "FadeOffThenOn.h"
 
-// bugs/new features
+// number of lights
+// 32 lights across the top plus the 2 frame holding pieces
+// 100 for the entire V
 
-#define NUM_LEDS 147
+#define NUM_LEDS 132
 #define DATA_PIN 2
 CRGB leds[NUM_LEDS];
 uint8_t MAX_BRIGHTNESS = 255;
@@ -20,7 +22,8 @@ CHSV redColor = CHSV(0, 255, 255); // bright red
 void setup() {
   FastLED.addLeds<WS2812B, DATA_PIN, GRB>(leds, NUM_LEDS);
   Serial.begin(9600);
-  FastLED.setBrightness(40);
+  FastLED.setBrightness(MAX_BRIGHTNESS);
+//  FastLED.setBrightness(40);
   fill_solid(leds, 20, CRGB::Black);
   FastLED.show();
 }
