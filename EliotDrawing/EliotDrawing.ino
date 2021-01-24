@@ -18,6 +18,8 @@
 // all lights on at 225 brightness - 0.667a
 // all lights on at 255 brightness - 0.750a
 
+uint8_t maxBrightness = 100;
+
 CRGB bodyLeds1[BODY_NUM_LEDS];
 CRGB bodyLeds2[BODY_NUM_LEDS];
 CRGB bodyLedsOut[BODY_NUM_LEDS];
@@ -61,7 +63,7 @@ void setup() {
   // put your setup code here, to run once:
   FastLED.addLeds<WS2812B, BODY_DATA_PIN, GRB>(bodyLedsOut, BODY_NUM_LEDS);
   FastLED.addLeds<WS2812B, EXTRA_DATA_PIN, GRB>(extraLedsOut, EXTRA_NUM_LEDS);
-  FastLED.setBrightness(10);
+  FastLED.setBrightness(maxBrightness);
   Serial.begin(9600);
 }
 
