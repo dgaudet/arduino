@@ -69,8 +69,8 @@ void setup() {
 
 void loop() {
   // put your main code here, to run repeatedly:
-//  fill_solid(bodyLeds, BODY_NUM_LEDS, CRGB::Blue);
-//  page1();
+//  fill_solid(bodyLedsOut, BODY_NUM_LEDS, CRGB::Blue);
+//  page1(bodyLedsOut);
 //  page2();
 //  page3();
   EVERY_N_MILLISECONDS(10) {
@@ -183,8 +183,7 @@ void top(CRGB ledStrip[], CHSV color) {
 }
 
 void right(CRGB ledStrip[], CHSV color) {
-  colorSection(ledStrip, color, 20, 21);
-  colorSection(ledStrip, color, 24, 27);
+  colorSection(ledStrip, color, 22, 27);
 }
 
 void pants(CRGB ledStrip[], CHSV color) {
