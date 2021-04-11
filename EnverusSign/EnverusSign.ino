@@ -1,9 +1,10 @@
 #include <Adafruit_NeoPixel.h>
 #include <FastLED.h>
 #include "FadeInAndOut.h"
+#include "TurnOnLeftToRight.h"
 
-#define TOP_PIN 13
-#define BOTTOM_PIN 6
+#define TOP_PIN 4
+#define BOTTOM_PIN 2
 #define TOP_LEDS 150
 #define BOTTOM_LEDS 104
 
@@ -38,7 +39,8 @@ void loop() {
 //  strip.setPixelColor(3, 0, 0, 0, 255);
 //  strip.setPixelColor(4, 50, 64, 50, 64);
 //  strip.setPixelColor(4, 0, 0, 0, 255);
-//    strip.fill(whiteColor, 0, NUM_LEDS);
+//    bottomStrip.fill(whiteColor, 0, BOTTOM_LEDS);
+//    bottomStrip.show();
 //    strip.fill(redColor, 0, NUM_LEDS);
 //    strip.fill(bothColor, 0, NUM_LEDS);
 //  strip.fill(greenColor, 0, NUM_LEDS);
@@ -50,17 +52,24 @@ void loop() {
 //  strip.setPixelColor(275, whiteColor);
 //  turnOnOneByOne();
 //  turnOnOneByOne2();
-  fadeInAndOutClass();
-//  fadeInAndOut1(topStrip, TOP_LEDS, ledCounter1);
-//  fadeInAndOut2();
+//  fadeInAndOut();
+  turnOnOneByOneClass();
 }
 
-void fadeInAndOutClass() {
+void fadeInAndOut() {
   Serial.print("run fade in and out");
   Serial.print("\n");
   isRunning = true;
   FadeInAndOut animation = FadeInAndOut(TOP_LEDS, BOTTOM_LEDS);
   while(isRunning) animation.runPattern(topStrip, bottomStrip);
+}
+
+void turnOnOneByOneClass() {
+  Serial.print("turn on left to right");
+  Serial.print("\n");
+  isRunning = true;
+  TurnOnLeftToRight animation = TurnOnLeftToRight(TOP_LEDS, BOTTOM_LEDS);
+  while(isRunning) animation.runPattern(topStrip, bottomStrip, whiteColor);
 }
 
 void turnOnOneByOne() {
@@ -94,26 +103,5 @@ void turnOnOneByOne2() {
       bottomStrip.fill();
     }
     bottomStrip.show();
-  }
-}
-
-void fadeInAndOut() {
-  EVERY_N_MILLISECONDS(10) {
-    if (upDown) {
-      ledCounter++;
-    } else {
-      ledCounter--;
-    }
-    
-    uint32_t color = topStrip.Color(0, 0, 0, ledCounter);
-    topStrip.fill(color, 0, TOP_LEDS);
-    if (ledCounter > 100) {
-      upDown = false;
-      ledCounter = 100-1;
-    }
-    if (ledCounter < 1) {
-      upDown = true;
-    }
-    topStrip.show();
   }
 }
