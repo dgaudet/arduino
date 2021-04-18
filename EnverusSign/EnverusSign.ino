@@ -14,7 +14,7 @@ uint32_t ledCounter = 0;
 uint32_t ledCounter1 = 0;
 bool upDown = true;
 
-uint32_t whiteColor = bottomStrip.Color(0, 0, 0, 55);
+uint32_t whiteColor = bottomStrip.Color(0, 0, 0, 25);
 uint32_t redColor = topStrip.Color(255, 0, 0, 0);
 uint32_t bothColor = topStrip.Color(255, 0, 0, 255);
 uint32_t greenColor = topStrip.Color(0, 255, 0, 0);
@@ -61,7 +61,7 @@ void fadeInAndOut() {
   Serial.print("\n");
   isRunning = true;
   FadeInAndOut animation = FadeInAndOut(TOP_LEDS, BOTTOM_LEDS);
-  while(isRunning) animation.runPattern(topStrip, bottomStrip);
+  while(isRunning) animation.runPattern(topStrip, bottomStrip, whiteColor);
 }
 
 void turnOnOneByOneClass() {
