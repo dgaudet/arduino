@@ -7,12 +7,12 @@
 #define BOTTOM_PIN 2
 #define TOP_LEDS 150
 #define BOTTOM_LEDS 104
+#define E_PIN 4
+#define E_LEDS 10
 
 Adafruit_NeoPixel topStrip(TOP_LEDS, TOP_PIN, NEO_GRBW + NEO_KHZ800);
 Adafruit_NeoPixel bottomStrip(BOTTOM_LEDS, BOTTOM_PIN, NEO_GRBW + NEO_KHZ800);
-uint32_t ledCounter = 0;
-uint32_t ledCounter1 = 0;
-bool upDown = true;
+Adafruit_NeoPixel eMiddleStrip(E_LEDS, E_PIN, NEO_GRBW + NEO_KHZ800);
 
 uint32_t whiteColor = bottomStrip.Color(0, 0, 0, 25);
 uint32_t redColor = topStrip.Color(255, 0, 0, 0);
@@ -50,8 +50,6 @@ void loop() {
 //  strip.setPixelColor(273, whiteColor);
 //  strip.setPixelColor(274, whiteColor);
 //  strip.setPixelColor(275, whiteColor);
-//  turnOnOneByOne();
-//  turnOnOneByOne2();
 //  fadeInAndOut();
   turnOnOneByOneClass();
 }
@@ -70,38 +68,4 @@ void turnOnOneByOneClass() {
   isRunning = true;
   TurnOnLeftToRight animation = TurnOnLeftToRight(TOP_LEDS, BOTTOM_LEDS);
   while(isRunning) animation.runPattern(topStrip, bottomStrip, whiteColor);
-}
-
-void turnOnOneByOne() {
-//  uint32_t color = strip.Color(0, 64, 0, 64); //green-ish-white
-  uint32_t color = whiteColor;
-  EVERY_N_MILLISECONDS(25) {
-    topStrip.setPixelColor(ledCounter, color);
-    Serial.print(ledCounter);
-    Serial.print("\n");
-    ledCounter++;
-    if (ledCounter > TOP_LEDS) {
-      delay(10);
-      ledCounter = 0;
-      topStrip.fill();
-    }
-    topStrip.show();
-  }
-}
-
-void turnOnOneByOne2() {
-//  uint32_t color = strip.Color(0, 64, 0, 64); //green-ish-white
-  uint32_t color = whiteColor;
-  EVERY_N_MILLISECONDS(25) {
-    bottomStrip.setPixelColor(ledCounter, color);
-    Serial.print(ledCounter);
-    Serial.print("\n");
-    ledCounter++;
-    if (ledCounter > BOTTOM_LEDS) {
-      delay(10);
-      ledCounter = 0;
-      bottomStrip.fill();
-    }
-    bottomStrip.show();
-  }
 }
